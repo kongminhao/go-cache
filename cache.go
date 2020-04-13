@@ -911,6 +911,23 @@ func (c *cache) Delete(k string) {
 	}
 }
 
+// Remove an item from the cache, Returns an error if the item not fonud
+// If there is no error, the item value is returned. 
+func (c *cache) Remove(k string) (interface{}, error) {
+	c.mu.Lock()
+	v, err := c.remove(k)
+	c.mu.Unlock()
+	return v, err
+}
+
+func (c *cache) remove(k string) (interface{}, error) {
+	if v, found := c.items[k]; found {
+		delete(c.items, k)
+		return v.Object, nil
+	}
+	return nil, fmt.Errorf("Item %s not exists", k)
+}
+
 func (c *cache) delete(k string) (interface{}, bool) {
 	if c.onEvicted != nil {
 		if v, found := c.items[k]; found {
